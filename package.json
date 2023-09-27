@@ -1,0 +1,23 @@
+{
+  "name": "tsb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ethereumjs/tx": "^5.0.0",
+    "@ethereumjs/util": "^9.0.0",
+    "@types/axios": "^0.14.0",
+    "asn1js": "^3.0.5",
+    "axios": "^1.5.0",
+    "validator": "^13.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.6.5",
+    "@types/validator": "^13.11.1"
+  }
+}
