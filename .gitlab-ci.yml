@@ -1,0 +1,72 @@
+image: ${REGISTRY}/nodejs-build:v2.0.0
+
+include:
+  - project: "sygnum/infra/templates"
+    ref: v4
+    file: "gitlab/.general-ci-template.yml"
+  - project: "sygnum/infra/templates"
+    ref: v4
+    file: "/gitlab/.test-ci-template.yml"
+  - project: "sygnum/infra/templates"
+    ref: v4
+    file: "/gitlab/.lint-audit-ci-template.yml"
+  - project: "sygnum/infra/templates"
+    ref: v4
+    file: "gitlab/.release-ci-template.yml"
+
+stages:
+  - build
+  - checks
+  - analysis
+  - publish
+
+build:
+  extends: .build-node
+  stage: build
+
+unit-tests:
+  extends: .tests
+  script: npm run test:cov -- --passWithNoTests
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/coverage
+    expire_in: 1 day
+  stage: checks
+
+lint:
+  extends: .lint
+  script: npm run lint
+  stage: checks
+
+audit:
+  extends: .audit
+  stage: analysis
+
+sonar-analysis:
+  extends: .sonar-scan
+  stage: analysis
+  dependencies:
+    - unit-tests
+
+debug:
+  stage: publish
+  script:
+    - echo CI_COMMIT_BRANCH=$CI_COMMIT_BRANCH
+    - echo CI_COMMIT_TAG=$CI_COMMIT_TAG
+    - echo CI_COMMIT_REF_NAME=$CI_COMMIT_REF_NAME
+  rules:
+    - if: '$CI_COMMIT_TAG && $CI_COMMIT_TAG =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/'
+
+publish:
+  stage: publish
+  extends: .build-node
+  variables:
+    NODE_ENV: development
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+      changes:
+        - "package.json"
+  script:
+    - echo '//gitlab.com/api/v4/projects/packages/npm/:_authToken=${GITLAB_TOKEN}' > .npmrc
+    - echo '//gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${GITLAB_TOKEN}' >> .npmrc
+    - npm publish

@@ -2,10 +2,32 @@
   "name": "tsb",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm run lint && tsc && tsc-alias --dir ./dist/src",
+    "build:watch": "tsc --watch",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prebuild": "rimraf dist",
+    "start": "tsc && export $(cat .env) && node dist/src/main.js",
+    "test": "jest",
+    "test:verbose": "jest --verbose",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "lint": "eslint './src/**/*.ts'",
+    "lint:fix": "eslint './src/**/*.ts' --fix",
+    "package-lock": "rm -f package-lock.json && npm install --package-lock-only --loglevel=error && git add package-lock.json",
+    "pre-commit": "npm run package-lock && npm run format && lint-staged",
+    "build-and-pack": "rm -fr `ls | grep -E '^sygnum-service-task-wrapper-.*.tgz'` && npm run build && npm pack"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "!dist/**/*.spec.d.ts",
+    "!dist/**/*.spec.js",
+    "!dist/**/*.spec.js.map"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
